@@ -14,6 +14,10 @@ A Clue (Cluedo) deduction tracker for the table. Record each suggestion, who ans
 - **Rules:** face-up cards (a table column), "ask everyone even after a card is shown", and editable hand sizes.
 - **Solved popup** when a category is certain; **continue game** prompt on reopen; in-app help.
 
+## Suspect art
+
+The six suspect cards use portrait art (`img/*.jpg`, also embedded in `portraits.js`). `python3 build.py` inlines `portraits.js` and `solver.js` into a single self-contained `dist/index.html`; GitHub Pages can also serve the repo root as is.
+
 ## How it works
 
 Every card has exactly one owner: a seated player, the table (face-up cards) or the envelope. The envelope holds one suspect, one weapon and one room. Each log entry becomes a rule:

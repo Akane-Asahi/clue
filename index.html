@@ -165,6 +165,19 @@ main.gm{padding:6px 0 0}
 .gc.unk b{font-size:34px;font-weight:700;max-width:none}
 .gc small{position:absolute;top:11%;left:0;right:0;text-align:center;font-size:8.5px;letter-spacing:1.8px;font-weight:800;text-transform:uppercase;color:#8a6f2e}
 .gc b{font-size:14.5px;font-weight:800;line-height:1.15;max-width:78%;letter-spacing:-.2px;hyphens:manual;-webkit-hyphens:manual;overflow-wrap:normal;word-break:normal}
+/* suspect portrait cards */
+.fc.art::before,.gc.art::before{z-index:2}
+.art .pic{position:absolute;left:7px;top:7px;width:calc(100% - 14px);height:calc(100% - 14px);object-fit:cover;border-radius:11px;pointer-events:none;-webkit-user-select:none;user-select:none}
+.gc.art .pic{left:6px;top:6px;width:calc(100% - 12px);height:calc(100% - 12px);border-radius:9px}
+.art small{z-index:3;top:7px!important;left:7px!important;right:7px!important;padding:9px 0 16px;border-radius:11px 11px 0 0;background:linear-gradient(rgba(10,8,5,.72),transparent);color:#e3d5b3!important}
+.gc.art small{top:6px!important;left:6px!important;right:6px!important;padding:7px 0 12px;border-radius:9px 9px 0 0}
+.art b{position:absolute;z-index:3;left:7px;right:7px;bottom:7px;max-width:none!important;padding:26px 6px 10px;border-radius:0 0 11px 11px;background:linear-gradient(transparent,rgba(10,8,5,.9) 62%);color:#f6efe0}
+.gc.art b{left:6px;right:6px;bottom:6px;padding:20px 4px 8px;border-radius:0 0 9px 9px;font-size:13.5px}
+.fc.art.tap b{padding-bottom:26px}
+.fc.art i{z-index:4;bottom:13px;color:#e3d5b3!important}
+.fc.art:not(.live) .pic{filter:grayscale(1) brightness(.42)}
+.fc.art:not(.live) b{color:#a79d8b}
+.fc.art .clown{position:absolute;z-index:4;top:50%;left:0;right:0;margin:0;text-align:center;font-size:38px;transform:translateY(-50%)}
 .fc.tap{cursor:pointer}
 .fc.tap:active{filter:brightness(.92)}
 .dirrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
@@ -233,6 +246,7 @@ table.dt td:last-child{text-align:right}
 <div id="sheet"></div>
 <div id="modal"></div>
 
+<script src="portraits.js"></script>
 <script src="solver.js"></script>
 <script>
 (function(){
@@ -310,10 +324,21 @@ function inits(){
 const catOf = c => D.catOf(c);
 const SUS_COLORS = { scarlett:['#c62828','#ffffff'], mustard:['#e1ad01','#231a00'], white:['#ffffff','#222222','#b9b4aa'],
   green:['#2e7d32','#ffffff'], peacock:['#1565c0','#ffffff'], plum:['#7b1fa2','#ffffff'] };
-function susColor(c){
+function susKey(c){
   if (catOf(c) !== 0) return null;
-  const key = D.CARDS[c].toLowerCase().replace(/^(miss|mrs\.?|mr\.?|colonel|professor|prof\.?)\s+/, '').trim();
-  return SUS_COLORS[key] || null;
+  return D.CARDS[c].toLowerCase().replace(/^(miss|mrs\.?|mr\.?|colonel|professor|prof\.?)\s+/, '').trim();
+}
+function susColor(c){
+  const key = susKey(c);
+  return key ? SUS_COLORS[key] || null : null;
+}
+function picHtml(c){
+  const src = portrait(c);
+  return src ? '<img class="pic" alt="" src="'+src+'" draggable="false">' : '';
+}
+function portrait(c){
+  const key = susKey(c);
+  return key && window.CLUE_PORTRAITS ? window.CLUE_PORTRAITS[key] || null : null;
 }
 let shortsFor = null, shorts = null;
 function shortName(c){
@@ -605,7 +630,7 @@ function recordSheet(){
   b += '<div class="fan">'+rec.cards.map((c,i) => {
     const bluff = rec.by !== 0 && result && result.ok && result.certain[c] === rec.by;
     const dead = state.myCards.includes(c) || state.faceUp.includes(c) || bluff, live = !dead, tap = live && isMine;
-    return '<div class="fc k'+i+(live?' live':'')+(tap?' tap':'')+'"'+(tap?' data-act="rec-show" data-c="'+c+'"':'')+'><div class="in"><small>'+S.CAT_NAMES[i]+'</small><b>'+softName(D.CARDS[c])+'</b>'+(tap?'<i>Tap if shown</i>':'')+(bluff?'<span class="clown" title="Bluff: the suggester holds this card">🤡</span>':'')+'</div></div>';
+    return '<div class="fc k'+i+(live?' live':'')+(tap?' tap':'')+(portrait(c)?' art':'')+'"'+(tap?' data-act="rec-show" data-c="'+c+'"':'')+'><div class="in">'+picHtml(c)+'<small>'+S.CAT_NAMES[i]+'</small><b>'+softName(D.CARDS[c])+'</b>'+(tap?'<i>Tap if shown</i>':'')+(bluff?'<span class="clown" title="Bluff: the suggester holds this card">🤡</span>':'')+'</div></div>';
   }).join('')+'</div>';
   if (isMine) {
     b += '<p class="muted" style="text-align:center">Tap the card '+esc(nm(cur))+' showed you. If they have none, you\'ll ask the next player.</p>';
@@ -746,7 +771,7 @@ function playerSheet(){
   const cs = knownCards(i), tot = i === state.me ? state.myCards.length : (pl.hand || 0);
   let b = '<p class="muted" style="margin-top:0">'+cs.length+' of '+tot+' cards known</p>';
   const unk = Math.max(0, tot - cs.length);
-  b += '<div class="cgrid">'+cs.map(c => '<div class="gc"><small>'+S.CAT_NAMES[catOf(c)]+'</small><b>'+softName(D.CARDS[c])+'</b></div>').join('')+Array(unk).fill('<div class="gc unk" aria-label="Unknown card"><b>?</b></div>').join('')+'</div>';
+  b += '<div class="cgrid">'+cs.map(c => '<div class="gc'+(portrait(c)?' art':'')+'">'+picHtml(c)+'<small>'+S.CAT_NAMES[catOf(c)]+'</small><b>'+softName(D.CARDS[c])+'</b></div>').join('')+Array(unk).fill('<div class="gc unk" aria-label="Unknown card"><b>?</b></div>').join('')+'</div>';
   return sheetFrame(nm(i)+(i===state.me?' (you)':''), b, '<button class="ib" data-act="players-open" aria-label="Back">‹</button>');
 }
 function menuSheet(){

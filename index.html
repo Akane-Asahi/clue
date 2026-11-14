@@ -337,8 +337,15 @@ function picHtml(c){
   return src ? '<img class="pic" alt="" src="'+src+'" draggable="false">' : '';
 }
 function portrait(c){
-  const key = susKey(c);
-  return key && window.CLUE_PORTRAITS ? window.CLUE_PORTRAITS[key] || null : null;
+  if (!window.CLUE_PORTRAITS) return null;
+  const k = catOf(c);
+  let key = null;
+  if (k === 0) key = susKey(c);
+  else if (k === 1) {
+    key = D.CARDS[c].toLowerCase().replace(/[^a-z]/g, '');
+    key = { dagger:'knife', spanner:'wrench', leadpiping:'leadpipe' }[key] || key;
+  }
+  return key ? window.CLUE_PORTRAITS[key] || null : null;
 }
 let shortsFor = null, shorts = null;
 function shortName(c){

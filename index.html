@@ -111,7 +111,9 @@ main.gm{padding:6px 0 0}
 .dock .best .bl em{font-style:normal;letter-spacing:.2px;text-transform:none;color:#a99c86;font-weight:500}
 .dock .best .inroom{margin-top:7px;color:#a99c86;font-size:12px}
 .dock .best .bp{display:flex;justify-content:center;gap:6px}
-.dock .best .bp span{border:1px solid var(--accent);color:var(--ink);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;white-space:nowrap}
+.dock .best .bp span{border:1px solid var(--accent);color:var(--ink);border-radius:999px;padding:5px 11px;font-size:13px;font-weight:600;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dock .best .bp span.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.dock .best .bp span:active{filter:brightness(1.25)}
 .dock .sp{display:flex;justify-content:center;gap:6px;flex-wrap:nowrap;margin:0 0 12px}
 .dock .sp span{background:var(--cream);color:var(--cink);border-radius:999px;padding:6px 11px;font-size:13px;font-weight:600;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .dock .btn{margin:0;border-radius:999px;padding:16px 14px;font-size:17px;font-weight:700}
@@ -554,7 +556,7 @@ function gameView(){
   });
   const nb = nextBy(), picked = ui.sel.filter(x => x != null), bst = bestFor();
   h += '</div></main><div class="dock">'
-    + (bst ? '<div class="best" data-act="use-best"><div class="bl">Best call <em>· ~'+Math.max(1,Math.round(bst.rel*100))+'% closer</em></div><div class="bp">'+bst.cards.map(c => '<span>'+esc(D.CARDS[c])+'</span>').join('')+'</div>'+(ui.sel[2]!=null?'<div class="inroom">for '+esc(D.CARDS[ui.sel[2]])+'</div>':'')+'</div>' : '')
+    + (bst ? '<div class="best" data-act="use-best"><div class="bl">Best call <em>· ~'+Math.max(1,Math.round(bst.rel*100))+'% closer</em></div><div class="bp">'+bst.cards.map(c => '<span role="button" data-act="sel" data-c="'+c+'"'+(ui.sel[catOf(c)]===c?' class="on"':'')+'>'+esc(D.CARDS[c])+'</span>').join('')+'</div>'+(ui.sel[2]!=null?'<div class="inroom">for '+esc(D.CARDS[ui.sel[2]])+'</div>':'')+'</div>' : '')
     + (picked.length && !(bst && picked.length === 3 && bst.cards.every(c => picked.includes(c))) ? '<div class="sp">'+picked.map(c => '<span>'+esc(D.CARDS[c])+'</span>').join('')+'</div>' : '')
     + '<button class="btn" data-act="rec-start" data-by="'+nb+'">Submit Call</button></div>';
   return h;

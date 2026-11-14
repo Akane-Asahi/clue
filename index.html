@@ -125,6 +125,13 @@ main.gm{padding:6px 0 0}
 .dlg{background:var(--card);border-radius:18px;padding:20px;width:100%;max-width:360px;box-shadow:var(--shadow);text-align:center}
 .dlg h3{font-size:19px}
 .bigcard{margin:14px auto;border:2px solid var(--accent);border-radius:14px;width:150px;padding:34px 10px;font-weight:750;font-size:20px;background:var(--bg)}
+.bigcard.art{position:relative;width:176px;aspect-ratio:.62;padding:0;overflow:hidden;background:#000;border:0;border-radius:18px;box-shadow:0 0 0 2px var(--accent),0 16px 30px -6px rgba(0,0,0,.6)}
+.bigcard.art small{position:absolute;display:block;margin:0;font-size:10.5px;letter-spacing:2.4px;font-weight:800;color:#e3d5b3}
+.bigcard.art b{font-size:21px;font-weight:800;padding:38px 8px 16px}
+.bigrow{display:flex;flex-wrap:wrap;justify-content:center;gap:0 10px}
+.bigrow.multi .bigcard.art{width:128px}
+.bigrow.multi .bigcard.art b{font-size:16px;padding:28px 4px 12px}
+.bigrow.multi .bigcard.art small{font-size:9px;letter-spacing:1.8px}
 .bigcard small{display:block;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
 .tiles{display:flex;gap:8px;justify-content:center;margin:14px 0}
 .tile{flex:1;border:1.5px solid var(--line);background:var(--card);border-radius:12px;padding:22px 6px;text-align:center;font-weight:700;cursor:pointer}
@@ -831,8 +838,10 @@ function renderModal(){
   if (!m) { $modal.innerHTML = ''; return; }
   let h;
   if (m.type === 'solved') {
-    h = '<div class="dlg"><h3>Solved '+m.items.map(([k]) => S.CAT_NAMES[k]).join(' & ')+'</h3><div class="muted" style="letter-spacing:1.5px;text-transform:uppercase;font-size:11px">In the envelope</div>'+
-      m.items.map(([k,c]) => '<div class="bigcard"><small>'+S.CAT_NAMES[k]+'</small>'+cardHtml(c)+'</div>').join('')+'<button class="btn" data-act="modal-ok">OK</button></div>';
+    h = '<div class="dlg"><h3>Solved '+m.items.map(([k]) => S.CAT_NAMES[k]).join(' & ')+'</h3><div class="muted" style="letter-spacing:1.5px;text-transform:uppercase;font-size:11px">In the envelope</div><div class="bigrow'+(m.items.length>1?' multi':'')+'">'+
+      m.items.map(([k,c]) => portrait(c)
+        ? '<div class="bigcard art">'+picHtml(c)+'<small>'+S.CAT_NAMES[k]+'</small><b>'+softName(D.CARDS[c])+'</b></div>'
+        : '<div class="bigcard"><small>'+S.CAT_NAMES[k]+'</small>'+cardHtml(c)+'</div>').join('')+'</div><button class="btn" data-act="modal-ok">OK</button></div>';
   } else if (m.type === 'continue') {
     h = '<div class="dlg"><h3>Game in progress</h3><p class="muted">You have a game in progress. Would you like to continue it?</p><div class="row"><button class="btn ghost grow" data-act="continue-no">No</button><button class="btn grow" data-act="modal-ok">Yes</button></div></div>';
   } else if (m.type === 'confirm') {

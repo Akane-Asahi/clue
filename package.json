@@ -1,0 +1,10 @@
+{
+  "name": "clues",
+  "version": "0.1.0",
+  "description": "Clue (Cluedo) deduction tracker: log suggestions, passes and shown cards, and see what can still be in the envelope.",
+  "scripts": {
+    "test": "node test/solver.test.js",
+    "start": "npx --yes serve ."
+  },
+  "license": "MIT"
+}

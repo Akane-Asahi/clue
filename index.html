@@ -187,6 +187,7 @@ main.gm{padding:6px 0 0}
 .fc.art:not(.live) .pic{filter:grayscale(1) brightness(.42)}
 .fc.art:not(.live) b{color:#a79d8b}
 .fc.art .clown{position:absolute;z-index:4;top:50%;left:0;right:0;margin:0;text-align:center;font-size:38px;transform:translateY(-50%)}
+.qm{display:inline-block;width:16px;height:16px;border-radius:50%;border:1.5px solid var(--accent);color:var(--accent);font-size:10.5px;font-weight:800;line-height:13px;text-align:center;vertical-align:1px}
 .fc.tap{cursor:pointer}
 .fc.tap:active{filter:brightness(.92)}
 .dirrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
@@ -210,7 +211,7 @@ table.tt{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12.5px
 .tt .x{text-align:right}
 .tt .x button{border:0;background:none;color:var(--bad);font-size:17px;cursor:pointer;padding:0 2px}
 .tt .pn,.tt .sp{padding:0 5px;font-size:11px;white-space:nowrap}
-.tt th:nth-child(1){width:5%}.tt th:nth-child(2){width:11%}.tt th:nth-child(3){width:23%}.tt th:nth-child(4){width:17%}.tt th:nth-child(5){width:19%}.tt th:nth-child(6){width:16%}.tt th:nth-child(7){width:9%}
+.tt th:nth-child(1){width:4%}.tt th:nth-child(2){width:10%}.tt th:nth-child(3){width:22%}.tt th:nth-child(4){width:21%}.tt th:nth-child(5){width:18%}.tt th:nth-child(6){width:16%}.tt th:nth-child(7){width:9%}
 .tt .spark{margin-top:3px}
 .ev{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
 .ev:first-child{border-top:0}
@@ -670,8 +671,8 @@ function recBack(){
 function turnsSheet(){
   if (!state.events.length) return sheetFrame('Turns', '<p class="muted">Nothing recorded yet.</p>');
   const loc = result && result.ok && state.rules.locate ? result.located : [];
-  let spk = new Set();
-  const cell = c => c == null ? '<td class="e">–</td>' : '<td>'+(catOf(c) === 0 ? cardHtml(c, true) : softName(shortName(c)))+(spk.has(c) ? '&nbsp;✨' : '')+'</td>';
+  let spk = new Set(), qm = new Set();
+  const cell = c => c == null ? '<td class="e">–</td>' : '<td>'+(catOf(c) === 0 ? cardHtml(c, true) : softName(shortName(c)))+(spk.has(c) ? '&nbsp;✨' : '')+(qm.has(c) ? '&nbsp;<span class="qm" title="Only this player or the envelope can hold it">?</span>' : '')+'</td>';
   const tgs = tagList(), tp = i => '<span class="pn">'+esc(tgs[i])+'</span>';
   const tn = []; let cnt = 0; state.events.forEach((e, k) => { tn[k] = isTurn(e) ? ++cnt : null; });
   let t = '<table class="tt"><thead><tr><th>#</th><th>By</th><th>Suspect</th><th>Weapon</th><th>Room</th><th>Showed</th><th></th></tr></thead><tbody>';
@@ -692,6 +693,16 @@ function turnsSheet(){
       if (ref.length) note.push('Refused: '+ref.map(esc).join(', '));
     }
     spk = new Set(); loc.filter(l => l.ev === i).forEach(l => l.cards.forEach(c => spk.add(c)));
+    qm = new Set();
+    if (ev.type === 'suggest' && result && result.ok) {
+      const r = result, E = r.nP;
+      ev.cards.forEach(c => {
+        if (r.certain[c] != null && r.certain[c] >= 0) return;          // already known
+        if (!r.possible[c][E] || !r.possible[c][ev.by]) return;         // needs envelope + the caller
+        for (let o = 0; o < r.nSeats + (r.hasTable ? 1 : 0); o++) if (o !== ev.by && r.possible[c][o]) return;
+        qm.add(c);
+      });
+    }
     t += '<tr class="r"><td class="n">'+(tn[i] == null ? '·' : tn[i])+'</td><td>'+by+'</td>'+cell(byCat[0])+cell(byCat[1])+cell(byCat[2])+'<td>'+ans+'</td><td class="x"><button data-act="del" data-i="'+i+'" aria-label="Delete entry">✕</button></td></tr>';
     if (note.length) t += '<tr class="nt"><td></td><td colspan="6"><div class="evsub">'+note.join(' · ')+'</div></td></tr>';
   }
@@ -807,7 +818,7 @@ function helpSheet(){
     d('Recording a turn','<p>Tap <b>My suggestion</b> or <b>Someone else\'s</b>, choose the three cards, then answer for each player in turn order. For your own suggestion, tap the card you were shown, or say they had none. For someone else\'s, say whether each player showed a card. Your own answers are filled in from your hand.</p>') +
     d('Reading the card list','<p>Each card shows its chance of being in the envelope. The columns are the other players: ✓ has it, ✕ can\'t have it, ? might. Tap a card for everything about it, including who suggested it.</p>') +
     d('Marking who has a card','<p>If you learn where a card is some other way, use <b>Mark who has a card</b> in the menu or on the card\'s detail sheet. Only mark what you are certain of.</p>') +
-    d('Locating cards automatically','<p>With <b>Locate cards for me</b> on, the turns list shows ✨ when it can tell which card another player showed, because the other two were ruled out for them.</p>') +
+    d('Locating cards automatically','<p>With <b>Locate cards for me</b> on, the turns list shows ✨ when it can tell which card another player showed, because the other two were ruled out for them.</p><p>A gold <span class="qm">?</span> after a card means it is a 50-50: everyone else is ruled out, so only the player who made that call, or the envelope, can have it.</p>') +
     d('Face-up cards and other rules','<p>In Settings you can mark cards dealt face up (the table column T), and make every player answer even after someone shows a card.</p>') +
     d('How the odds work','<p>The app tracks every possible deal that fits what you recorded. ✓ and ✕ are exact. Percentages are estimated by sampling those deals.</p>');
   return sheetFrame('Help', b);

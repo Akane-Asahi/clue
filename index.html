@@ -232,6 +232,8 @@ summary{cursor:pointer;font-weight:650;padding:4px 0}
 table.dt{width:100%;border-collapse:collapse;font-size:14px}
 table.dt td{padding:6px 4px;border-top:1px solid var(--line)}
 table.dt td:last-child{text-align:right}
+table.dt tr.tap{cursor:pointer}
+table.dt tr.tap:active td{background:rgba(193,155,87,.1)}
 
 /* player + suspect pills */
 .pn{display:inline-block;border:1.5px solid var(--red);color:var(--red);border-radius:999px;padding:1px 10px;font-size:13px;font-weight:600;white-space:nowrap;line-height:1.5}
@@ -727,16 +729,15 @@ function detailSheet(){
     if (!r.possible[c][o]) st = '<span class="muted">No</span>';
     else if (r.certain[c] === o) st = '<b style="color:var(--ok)">Has it</b>';
     else st = '<span class="heat" style="background:rgba(var(--heat),'+(0.08+0.5*(r.prob?r.prob[c][o]:0)).toFixed(2)+')">'+(r.prob?Math.round(r.prob[c][o]*100)+'%':'?')+'</span>';
-    b += '<tr><td>'+esc(label)+'</td><td>'+st+'</td></tr>';
+    const markIdx = state.events.findIndex(e => e.type === 'has' && e.card === c && e.p === o);
+    const canMark = o >= 1 && o < r.nSeats && !state.myCards.includes(c) && !state.faceUp.includes(c) && (markIdx >= 0 || r.possible[c][o]);
+    if (markIdx >= 0) st = '<span class="muted" style="font-size:12px">marked &nbsp;</span>' + st;
+    b += '<tr'+(canMark ? ' class="tap" data-act="own" data-p="'+o+'" data-c="'+c+'"' : '')+'><td>'+esc(label)+'</td><td>'+st+'</td></tr>';
   }
   b += '</table>';
+  if (!state.myCards.includes(c) && !state.faceUp.includes(c)) b += '<p class="muted" style="font-size:12.5px;margin:8px 2px 0">Found out where it is another way? Tap a player to mark that they have it. Tap again to undo. Only if you\'re certain.</p>';
   const sg = suggestersOf(c);
   b += '<h2 style="margin-top:14px">Suggested</h2>'+(sg.length ? sg.map(s => '<div class="muted">Turn '+s.turn+' · '+esc(nm(s.by))+(s.by===0?' (you)':'')+'</div>').join('') : '<div class="muted">Not suggested yet.</div>');
-  if (!state.myCards.includes(c) && !state.faceUp.includes(c)) {
-    b += '<h2 style="margin-top:14px">Mark who has it</h2><div class="pills">';
-    for (let o = 1; o < r.nSeats; o++) b += '<button class="pill" data-act="mark-set" data-p="'+o+'" data-c="'+c+'">'+esc(nm(o))+'</button>';
-    b += '</div><p class="muted">Only if you\'re certain. A wrong mark can make later deductions wrong too.</p>';
-  }
   return sheetFrame(D.CARDS[c], b);
 }
 
@@ -931,6 +932,11 @@ document.addEventListener('click', e => {
     case 'mark-open': ui.mark = {card:null}; ui.sheet = 'mark'; render(); break;
     case 'mark-card': ui.mark.card = c; renderSheet(); break;
     case 'mark-clear': ui.mark.card = null; renderSheet(); break;
+    case 'own': {
+      const p = +el.dataset.p, idx = state.events.findIndex(e => e.type === 'has' && e.card === c && e.p === p);
+      if (idx >= 0) state.events.splice(idx, 1); else addEvent({type:'has', p, card:c});
+      commit(); break;
+    }
     case 'mark-set': addEvent({type:'has', p:+el.dataset.p, card:c}); ui.sheet = null; commit(); break;
     case 'acc-open': ui.acc = {by:1, cards:[null,null,null]}; ui.sheet = 'accuse'; render(); break;
     case 'acc-by': ui.acc.by = i; renderSheet(); break;

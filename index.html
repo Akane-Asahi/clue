@@ -183,6 +183,8 @@ main.gm{padding:6px 0 0}
 .art b{position:absolute;z-index:3;left:0;right:0;bottom:0;max-width:none!important;padding:30px 6px 12px;background:linear-gradient(transparent,rgba(10,8,5,.9) 62%);color:#f6efe0}
 .gc.art b{padding:22px 4px 9px;font-size:13.5px}
 .fc.art.tap b{padding-bottom:30px}
+.fc.k2.art b{right:auto;width:62%;font-size:16px;line-height:1.1;padding:34px 0 12px}
+.fc.k2.art.tap b{padding-bottom:30px}
 .fc.art i{z-index:4;bottom:12px;color:#e3d5b3!important}
 .fc.art:not(.live) .pic{filter:grayscale(1) brightness(.42)}
 .fc.art:not(.live) b{color:#a79d8b}
@@ -353,9 +355,9 @@ function portrait(c){
   const k = catOf(c);
   let key = null;
   if (k === 0) key = susKey(c);
-  else if (k === 1) {
+  else if (k === 1 || k === 2) {
     key = D.CARDS[c].toLowerCase().replace(/[^a-z]/g, '');
-    key = { dagger:'knife', spanner:'wrench', leadpiping:'leadpipe' }[key] || key;
+    key = { dagger:'knife', spanner:'wrench', leadpiping:'leadpipe', billiard:'billiardroom', dining:'diningroom' }[key] || key;
   }
   return key ? window.CLUE_PORTRAITS[key] || null : null;
 }

@@ -607,7 +607,12 @@ function recAdvance(){
     if (last && last.r === 'showed' && !state.rules.askAll) return recFinish();
     if (rec.responses.length >= order.length) return recFinish();
     const p = order[rec.responses.length];
-    if (p === 0) { const holds = rec.cards.some(c => state.myCards.includes(c)); rec.responses.push({ p, r: holds ? 'showed' : 'none', auto:true }); continue; }
+    if (p === 0) {
+      const held = rec.cards.filter(c => state.myCards.includes(c));
+      if (held.length > 1) return render();   // you choose which one to show
+      rec.responses.push(held.length ? { p, r:'showed', card:held[0], auto:true } : { p, r:'none', auto:true });
+      continue;
+    }
     return render();
   }
 }
@@ -645,13 +650,16 @@ function recordSheet(){
     b += '<span class="pill'+(i===rec.responses.length?' on':'')+(rs?' done':'')+'">'+esc(label)+'</span>';
   });
   b += '</div>';
-  b += '<div class="ask"><div class="muted">'+(isMine?'You\'re asking':esc(nm(rec.by))+' is asking')+'</div><div class="who">'+esc(nm(cur))+'</div><div class="muted">if they have any of these</div></div>';
+  const youShow = cur === 0 && !isMine;
+  b += '<div class="ask"><div class="muted">'+(isMine?'You\'re asking':esc(nm(rec.by))+' is asking')+'</div><div class="who">'+esc(youShow?'You':nm(cur))+'</div><div class="muted">'+(youShow?'Pick the card you show':'if they have any of these')+'</div></div>';
   b += '<div class="fan">'+rec.cards.map((c,i) => {
     const bluff = rec.by !== 0 && result && result.ok && result.certain[c] === rec.by;
-    const dead = state.myCards.includes(c) || state.faceUp.includes(c) || bluff, live = !dead, tap = live && isMine;
-    return '<div class="fc k'+i+(live?' live':'')+(tap?' tap':'')+(portrait(c)?' art':'')+'"'+(tap?' data-act="rec-show" data-c="'+c+'"':'')+'><div class="in">'+picHtml(c)+'<small>'+S.CAT_NAMES[i]+'</small><b>'+softName(D.CARDS[c])+'</b>'+(tap?'<i>Tap if shown</i>':'')+(bluff?'<span class="clown" title="Bluff: the suggester holds this card">🤡</span>':'')+'</div></div>';
+    const dead = youShow ? !state.myCards.includes(c) : state.myCards.includes(c) || state.faceUp.includes(c) || bluff, live = !dead, tap = live && (isMine || youShow);
+    return '<div class="fc k'+i+(live?' live':'')+(tap?' tap':'')+(portrait(c)?' art':'')+'"'+(tap?' data-act="rec-show" data-c="'+c+'"':'')+'><div class="in">'+picHtml(c)+'<small>'+S.CAT_NAMES[i]+'</small><b>'+softName(D.CARDS[c])+'</b>'+(tap?'<i>'+(youShow?'Tap to show':'Tap if shown')+'</i>':'')+(bluff?'<span class="clown" title="Bluff: the suggester holds this card">🤡</span>':'')+'</div></div>';
   }).join('')+'</div>';
-  if (isMine) {
+  if (youShow) {
+    b += '<p class="muted" style="text-align:center">Tap the card you show '+esc(nm(rec.by))+'. The others stay hidden, and the Turns table will remember which one you showed.</p>';
+  } else if (isMine) {
     b += '<p class="muted" style="text-align:center">Tap the card '+esc(nm(cur))+' showed you. If they have none, you\'ll ask the next player.</p>';
     b += '<button class="btn ghost" data-act="rec-none">'+esc(nm(cur))+' has none of these</button>';
   } else {

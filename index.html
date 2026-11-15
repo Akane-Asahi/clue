@@ -430,7 +430,7 @@ const canEditSetup = () => state.events.length === 0;
 function rulesHtml(inGame){
   const fu = state.faceUp;
   let h = '<div class="switch"><div><b>Ask everyone, even after a card is shown</b><div class="muted">House rule: every other player answers each suggestion.</div></div><button class="tog'+(state.rules.askAll?' on':'')+'" data-act="rule-askAll" aria-label="Toggle"></button></div>';
-  h += '<div class="switch"><div><b>Locate cards for me</b><div class="muted">Marks ✨ in the turns list when it can tell which card was shown.</div></div><button class="tog'+(state.rules.locate?' on':'')+'" data-act="rule-locate" aria-label="Toggle"></button></div>';
+  h += '<div class="switch"><div><b>Locate cards for me</b><div class="muted">Marks 👁️ or ✨ in the turns list when it can tell which card was shown.</div></div><button class="tog'+(state.rules.locate?' on':'')+'" data-act="rule-locate" aria-label="Toggle"></button></div>';
   h += '<div style="padding-top:10px;border-top:1px solid var(--line)"><b>Face-up cards</b><div class="muted">Cards dealt face up (or set aside, as in some 2-player rules). Tap to mark. '+fu.length+' selected.</div>';
   h += cardChips('faceup', fu, {disabled: c => state.myCards.includes(c)});
   h += '</div>';
@@ -671,8 +671,8 @@ function recBack(){
 function turnsSheet(){
   if (!state.events.length) return sheetFrame('Turns', '<p class="muted">Nothing recorded yet.</p>');
   const loc = result && result.ok && state.rules.locate ? result.located : [];
-  let spk = new Set(), qm = new Set();
-  const cell = c => c == null ? '<td class="e">–</td>' : '<td>'+(catOf(c) === 0 ? cardHtml(c, true) : softName(shortName(c)))+(spk.has(c) ? '&nbsp;✨' : '')+(qm.has(c) ? '&nbsp;<span class="qm" title="Only this player or the envelope can hold it">?</span>' : '')+'</td>';
+  let spk = new Set(), eye = new Set(), qm = new Set();
+  const cell = c => c == null ? '<td class="e">–</td>' : '<td>'+(catOf(c) === 0 ? cardHtml(c, true) : softName(shortName(c)))+(eye.has(c) ? '&nbsp;👁️' : spk.has(c) ? '&nbsp;✨' : '')+(qm.has(c) ? '&nbsp;<span class="qm" title="Only this player or the envelope can hold it">?</span>' : '')+'</td>';
   const tgs = tagList(), tp = i => '<span class="pn">'+esc(tgs[i])+'</span>';
   const tn = []; let cnt = 0; state.events.forEach((e, k) => { tn[k] = isTurn(e) ? ++cnt : null; });
   let t = '<table class="tt"><thead><tr><th>#</th><th>By</th><th>Suspect</th><th>Weapon</th><th>Room</th><th>Showed</th><th></th></tr></thead><tbody>';
@@ -692,7 +692,10 @@ function turnsSheet(){
       if (none.length) note.push('Passed: '+none.map(esc).join(', '));
       if (ref.length) note.push('Refused: '+ref.map(esc).join(', '));
     }
-    spk = new Set(); loc.filter(l => l.ev === i).forEach(l => l.cards.forEach(c => spk.add(c)));
+    // 👁 = the shown card is known (you recorded it, or the app narrowed it to one card); ✨ = narrowed to two
+    spk = new Set(); eye = new Set();
+    if (ev.type === 'suggest') S.responsesOf(ev, state.players.length).forEach(r => { if (r.r === 'showed' && r.card != null) eye.add(r.card); });
+    loc.filter(l => l.ev === i).forEach(l => l.cards.forEach(c => (l.cards.length === 1 ? eye : spk).add(c)));
     qm = new Set();
     if (ev.type === 'suggest' && result && result.ok) {
       const r = result, E = r.nP;
@@ -818,7 +821,7 @@ function helpSheet(){
     d('Recording a turn','<p>Tap <b>My suggestion</b> or <b>Someone else\'s</b>, choose the three cards, then answer for each player in turn order. For your own suggestion, tap the card you were shown, or say they had none. For someone else\'s, say whether each player showed a card. Your own answers are filled in from your hand.</p>') +
     d('Reading the card list','<p>Each card shows its chance of being in the envelope. The columns are the other players: ✓ has it, ✕ can\'t have it, ? might. Tap a card for everything about it, including who suggested it.</p>') +
     d('Marking who has a card','<p>If you learn where a card is some other way, use <b>Mark who has a card</b> in the menu or on the card\'s detail sheet. Only mark what you are certain of.</p>') +
-    d('Locating cards automatically','<p>With <b>Locate cards for me</b> on, the turns list shows ✨ when it can tell which card another player showed, because the other two were ruled out for them.</p><p>A gold <span class="qm">?</span> after a card means it is a 50-50: everyone else is ruled out, so only the player who made that call, or the envelope, can have it.</p>') +
+    d('Locating cards automatically','<p>With <b>Locate cards for me</b> on, the turns list works out which card another player showed. 👁️ marks the card that was shown: one you saw and recorded, or one the app has narrowed down to a single card. ✨ means it is down to two possible cards, because the third was ruled out for that player.</p><p>A gold <span class="qm">?</span> after a card means it is a 50-50: everyone else is ruled out, so only the player who made that call, or the envelope, can have it.</p>') +
     d('Face-up cards and other rules','<p>In Settings you can mark cards dealt face up (the table column T), and make every player answer even after someone shows a card.</p>') +
     d('How the odds work','<p>The app tracks every possible deal that fits what you recorded. ✓ and ✕ are exact. Percentages are estimated by sampling those deals.</p>');
   return sheetFrame('Help', b);

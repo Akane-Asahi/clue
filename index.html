@@ -658,9 +658,6 @@ function recordSheet(){
     b += '<p class="muted" style="text-align:center">You won\'t see which card '+esc(nm(cur))+' shows.</p>';
     b += '<div class="row"><button class="btn grow" data-act="rec-showed">Showed a card</button><button class="btn ghost grow" data-act="rec-none">Has none</button></div>';
   }
-  b += '<button class="btn ghost" data-act="rec-refused" style="border:0">'+esc(nm(cur))+' refused to show</button>';
-  b += '<p class="muted" style="text-align:center;margin-top:0">A refusal gives no information and the next player is asked.</p>';
-  b += '<button class="btn danger" data-act="rec-back">Back</button>';
   return sheetFrame(isMine ? 'Your suggestion' : nm(rec.by)+'\'s suggestion', b);
 }
 function recBack(){

@@ -649,7 +649,7 @@ function recordSheet(){
   const cur = order[rec.responses.length];
   // Cards I have already shown this asker (from earlier turns), so I can show the same one again.
   const seen = new Set();
-  if (cur === 0 && !isMine) state.events.forEach(ev => { if (ev.type === 'suggest' && ev.by === rec.by) (ev.responses || []).forEach(r => { if (r.p === 0 && r.r === 'showed' && r.card != null) seen.add(r.card); }); });
+  if (cur === 0 && !isMine) state.events.forEach(ev => { if (ev.type === 'suggest' && Number(ev.by) === Number(rec.by)) S.responsesOf(ev, state.players.length).forEach(r => { if (Number(r.p) === 0 && r.r === 'showed' && r.card != null) seen.add(Number(r.card)); }); });
   let b = '<div class="pills">';
   order.forEach((p,i) => {
     const rs = rec.responses[i];

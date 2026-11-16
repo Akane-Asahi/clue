@@ -8,7 +8,7 @@ A Clue (Cluedo) deduction tracker for the table. Record each suggestion, who ans
 - **Editions:** Clue (US), Cluedo (UK), plus your own card sets (saved on the device).
 - **Card list:** every card with its chance of being in the envelope, a column per other player (✓ has it, ✕ can't, ? might), who suggested it, and your own cards highlighted. Tap a card for the full picture.
 - **Recording a turn:** choose the three cards, then answer for each player in order. On your own suggestion, tap the card you were shown. Your own answers on others' suggestions are filled in from your hand. A refusal gives no information and moves on.
-- **Locate cards for me:** the turns list shows ✨ when it can tell which card someone showed, because the other two were ruled out for them.
+- **Locate cards for me:** the turns list shows 👁️ when it knows which card someone showed. When it is down to two cards, a moon shows how likely each one is in their hand: 🌕 almost certain, 🌖 more than half, 🌗 about even, 🌘 less likely.
 - **Mark who has a card:** for things you learned some other way.
 - **Wrong accusations**, **undo**, and delete any turn.
 - **Rules:** face-up cards (a table column), "ask everyone even after a card is shown", and editable hand sizes.

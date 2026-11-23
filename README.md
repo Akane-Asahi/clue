@@ -11,6 +11,7 @@ A Clue (Cluedo) deduction tracker for the table. Record each suggestion, who ans
 - **Locate cards for me:** the turns list shows 👁️ when it knows which card someone showed. When it is down to two cards, a moon shows how likely each one is in their hand: 🌕 almost certain, 🌖 more than half, 🌗 about even, 🌘 less likely.
 - **Mark who has a card:** for things you learned some other way.
 - **Wrong accusations**, **undo**, and delete any turn.
+- **Two directions:** direction of play (whose turn is next) and direction of asking (who answers a suggestion first) are set separately, for tables where they differ.
 - **Rules:** face-up cards (a table column), "ask everyone even after a card is shown", and editable hand sizes.
 - **Solved popup** when a category is certain; **continue game** prompt on reopen; in-app help.
 

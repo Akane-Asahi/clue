@@ -323,7 +323,7 @@
   /*
    * bestSuggestions(result, state, top) -> [ { cards:[s,w,r], gain, rel } ]
    * For every suspect/weapon/room triple I could name, simulate the answers over the sampled
-   * consistent deals (first player in turn order who holds a named card shows one; I see which
+   * consistent deals (first player in asking order who holds a named card shows one; I see which
    * card) and measure the expected drop in uncertainty: envelope entropy first, plus a small
    * share of the entropy over everybody's cards. Higher gain = the question that cuts the
    * possibilities down the most. Not the same as the best guess for the envelope.
@@ -331,7 +331,7 @@
   function bestSuggestions(result, state, top, room) {
     if (!result || !result.ok || !result.samples || !result.samples.length || result.solved) return [];
     const D = result.deck, N = D.N, E = result.nP, nO = E + 1, me = state.me || 0;
-    const n = state.players.length, step = state.dir === 'ccw' ? -1 : 1;
+    const n = state.players.length, ad = state.askDir || state.dir, step = ad === 'ccw' ? -1 : 1;
     const order = []; for (let k = 1; k < n; k++) order.push((((me + step * k) % n) + n) % n);
     const kk = Math.max(1, Math.ceil(result.samples.length / 450));
     const smp = result.samples.filter((_, i) => i % kk === 0), M = smp.length;
